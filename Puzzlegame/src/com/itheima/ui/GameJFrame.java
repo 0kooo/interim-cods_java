@@ -2,11 +2,13 @@ package com.itheima.ui;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
 
-public class GameJFrame extends JFrame implements KeyListener {
+public class GameJFrame extends JFrame implements KeyListener, ActionListener {
     //Jframe是窗体和界面
     //子类应该也是窗体和界面
     //GameJFrame这个界面就是游戏界面
@@ -25,12 +27,27 @@ public class GameJFrame extends JFrame implements KeyListener {
     String path = "Puzzlegame\\image\\animal\\animal3\\";
 
     //定义一个二维数组,存储正确数据
-    int[][] win = {
-            {1,2,3,4},
-            {5,6,7,8},
-            {9,10,11,12},
-            {13,14,15,0}
+    final int[][] win = {
+            {1, 2, 3, 4},
+            {5, 6, 7, 8},
+            {9, 10, 11, 12},
+            {13, 14, 15, 0}
     };
+
+    //定义变量用来统计步数
+    int step = 0;
+
+    //创建选项下面的条目对象
+    JMenuItem replayItem = new JMenuItem("重新游戏");
+    JMenuItem reLonginItem = new JMenuItem("重新登录");
+    JMenuItem closeItem = new JMenuItem("关闭游戏");
+    JMenuItem girl = new JMenuItem("美女");
+    JMenuItem animal = new JMenuItem("动物");
+    JMenuItem exercise = new JMenuItem("运动");
+
+    JMenuItem accountItem = new JMenuItem("公众号");
+
+    Random r = new Random();
 
     public GameJFrame() {
         //初始化界面
@@ -68,9 +85,8 @@ public class GameJFrame extends JFrame implements KeyListener {
             if (tempArr[i] == 0) {
                 x = i % 4;
                 y = i / 4;
-            } else {
-                data[i % 4][i / 4] = tempArr[i];
             }
+            data[i % 4][i / 4] = tempArr[i];
         }
     }
 
@@ -79,11 +95,16 @@ public class GameJFrame extends JFrame implements KeyListener {
         //清空原来已经出现的所以的图片
         this.getContentPane().removeAll();
 
-        if(victory()){
+        if (victory()) {
             JLabel winJLabl = new JLabel(new ImageIcon("E:\\cod\\interim-cods\\Puzzlegame\\image\\win.png"));
-            winJLabl.setBounds(203,283,197,73);
+            winJLabl.setBounds(203, 283, 197, 73);
             this.getContentPane().add(winJLabl);
         }
+
+        JLabel stepCount = new JLabel("步数: " + step);
+        stepCount.setBounds(50, 30, 100, 20);
+        this.getContentPane().add(stepCount);
+
         //路径分为
         //绝对路劲:一般从盘符开始 C:\ 或D:\
         //相对路径:不是从盘符开始
@@ -99,7 +120,7 @@ public class GameJFrame extends JFrame implements KeyListener {
             for (int j = 0; j < 4; j++) {
                 //创建一个图片Imagecon的对象
                 //ImageIcon icon = new ImageIcon("E:\\cod\\interim-cods\\Puzzlegame\\image\\animal\\animal3\\1.jpg");
-                int number = data[j][i];
+                int number = data[i][j];
                 //创建一个JLabel的对象(管理容器)
                 JLabel jLabel = new JLabel(new ImageIcon(path + number + ".jpg"));
                 //指定图片位置
@@ -130,20 +151,29 @@ public class GameJFrame extends JFrame implements KeyListener {
 
         //创建菜单上两个选项的对象(功能 关于我们)
         JMenu functionJMenu = new JMenu("功能");
+        JMenu changeJMenu = new JMenu("更换图片");
         JMenu aboutJMenu = new JMenu("关于我们");
-        //创建选项下面的条目对象
-        JMenuItem replayItem = new JMenuItem("重新游戏");
-        JMenuItem reLonginItem = new JMenuItem("重新登录");
-        JMenuItem closeItem = new JMenuItem("关闭游戏");
-
-        JMenuItem accountItem = new JMenuItem("公众号");
 
         //将每一个选项下面的条目添加到选项当中
+        functionJMenu.add(changeJMenu);
         functionJMenu.add(replayItem);
         functionJMenu.add(reLonginItem);
         functionJMenu.add(closeItem);
 
+        changeJMenu.add(girl);
+        changeJMenu.add(animal);
+        changeJMenu.add(exercise);
+
         aboutJMenu.add(accountItem);
+
+        //给条目绑定事件
+        replayItem.addActionListener(this);
+        reLonginItem.addActionListener(this);
+        closeItem.addActionListener(this);
+        accountItem.addActionListener(this);
+        girl.addActionListener(this);
+        animal.addActionListener(this);
+        exercise.addActionListener(this);
 
         //将菜单里面的两个选项添加到菜单上
         jMenuBar.add(functionJMenu);
@@ -180,12 +210,12 @@ public class GameJFrame extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-        if(code == 65){
+        if (code == 65) {
             //把界面中所以的图片全部删除
             this.getContentPane().removeAll();
             //加载第一张完全图片
-            JLabel all = new JLabel(new ImageIcon( path + "all.jpg"));
-            all.setBounds(83,134,420,420);
+            JLabel all = new JLabel(new ImageIcon(path + "all.jpg"));
+            all.setBounds(83, 134, 420, 420);
             this.getContentPane().add(all);
             //添加背景图片
             JLabel background = new JLabel(new ImageIcon("Puzzlegame\\image\\background.png"));
@@ -201,15 +231,15 @@ public class GameJFrame extends JFrame implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         //判断游戏是否胜利,如果胜利,直接结束方法,不在执行以下移动代码
-        if(victory()){
+        if (victory()) {
             return;
         }
         //对上, 下, 左, 右进行判断
         //左: 37, 上: 38, 右: 39, 下: 40
         int cod = e.getKeyCode();
-        if (cod == 38) {
-            System.out.println("向上移动");
-            if(y == 0){
+        if (cod == 37) {
+            System.out.println("向左移动");
+            if (y == 0) {
                 return;
             }
             //向上的操作实质是将0下面的图片向左移动到0的位置
@@ -217,11 +247,13 @@ public class GameJFrame extends JFrame implements KeyListener {
             data[x][y] = data[x][y - 1];
             data[x][y - 1] = 0;
             y--;
+            //每移动一步,计数器自增一次
+            step++;
             //调用方法按照最新的数组加载图片
             iniImage();
-        } else if (cod == 37) {
-            System.out.println("向左移动");
-            if(x == 0){
+        } else if (cod == 38) {
+            System.out.println("向上移动");
+            if (x == 0) {
                 return;
             }
             //向上的操作实质是将0下面的图片向上移动到0的位置
@@ -229,11 +261,13 @@ public class GameJFrame extends JFrame implements KeyListener {
             data[x][y] = data[x - 1][y];
             data[x - 1][y] = 0;
             x--;
+            //每移动一步,计数器自增一次
+            step++;
             //调用方法按照最新的数组加载图片
             iniImage();
-        } else if (cod == 40) {
-            System.out.println("向下移动");
-            if(y == 3){
+        } else if (cod == 39) {
+            System.out.println("向右移动");
+            if (y == 3) {
                 return;
             }
             //向上的操作实质是将0下面的图片向右移动到0的位置
@@ -241,11 +275,13 @@ public class GameJFrame extends JFrame implements KeyListener {
             data[x][y] = data[x][y + 1];
             data[x][y + 1] = 0;
             y++;
+            //每移动一步,计数器自增一次
+            step++;
             //调用方法按照最新的数组加载图片
             iniImage();
-        } else if (cod == 39) {
-            System.out.println("向右移动");
-            if(x == 3){
+        } else if (cod == 40) {
+            System.out.println("向下移动");
+            if (x == 3) {
                 return;
             }
             //向上的操作实质是将0下面的图片向下移动到0的位置
@@ -253,16 +289,18 @@ public class GameJFrame extends JFrame implements KeyListener {
             data[x][y] = data[x + 1][y];
             data[x + 1][y] = 0;
             x++;
+            //每移动一步,计数器自增一次
+            step++;
             //调用方法按照最新的数组加载图片
             iniImage();
-        }else if(cod == 65){
+        } else if (cod == 65) {
             iniImage();
-        }else if(cod == 87){
+        } else if (cod == 87) {
             data = new int[][]{
-                    {1,2,3,4},
-                    {5,6,7,8},
-                    {9,10,11,12},
-                    {13,14,15,0}
+                    {1, 2, 3, 4},
+                    {5, 6, 7, 8},
+                    {9, 10, 11, 12},
+                    {13, 14, 15, 0}
             };
             iniImage();
         }
@@ -270,14 +308,90 @@ public class GameJFrame extends JFrame implements KeyListener {
 
     //判断data数组中的数据是否和win数组中的数据相等
     //如果相等返回true,不相等返回false
-    public boolean victory(){
+    public boolean victory() {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
-                if(data[i][j] != win[i][j]){
+                if (data[i][j] != win[i][j]) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        //获取当前被点击的条目对象
+        Object obj = e.getSource();
+        //判断
+        if (obj == replayItem) {
+            System.out.println("重新游戏");
+            //计数器清零
+            step = 0;
+            //再次打乱二维数组
+            iniData();
+            //重新加载图片
+            iniImage();
+        } else if (obj == reLonginItem) {
+            System.out.println("重新登录");
+            //关闭当前游戏界面
+            this.setVisible(false);
+            //打开登录界面
+            new LoginJFrame();
+        } else if (obj == closeItem) {
+            System.out.println("关闭游戏");
+            //直接关闭虚拟机
+            System.exit(0);
+        } else if (obj == accountItem) {
+            System.out.println("公众号");
+            //创建一个弹框对象
+            JDialog jDialog = new JDialog();
+            //创建一个管理图片的容器对象JLabel
+            JLabel jLabel = new JLabel(new ImageIcon("Puzzlegame\\image\\about.png"));
+            //设置位置和宽高
+            jLabel.setBounds(0, 0, 258, 258);
+            //把图片添加到弹框当中
+            jDialog.getContentPane().add(jLabel);
+            //给弹框设置大小
+            jDialog.setSize(344, 344);
+            //让弹框置顶
+            jDialog.setAlwaysOnTop(true);
+            //让弹框居中
+            jDialog.setLocationRelativeTo(null);
+            //弹框不关闭则无法操作下面的界面
+            jDialog.setModal(true);
+            //让弹框显示出来
+            jDialog.setVisible(true);
+        }else if(obj == girl){
+            System.out.println("更换成美女");
+            int num = r.nextInt(13) + 1;
+            path = "Puzzlegame\\image\\"+"girl\\"+"girl" + num +"\\";
+            //计数器清零
+            step = 0;
+            //再次打乱二维数组
+            iniData();
+            //重新加载图片
+            iniImage();
+        }else if(obj == animal){
+            System.out.println("更换成动物");
+            int num = r.nextInt(8) + 1;
+            path = "Puzzlegame\\image\\"+"animal\\"+"animal" + num +"\\";
+            //计数器清零
+            step = 0;
+            //再次打乱二维数组
+            iniData();
+            //重新加载图片
+            iniImage();
+        }else if(obj == exercise){
+            System.out.println("更换成运动");
+            int num = r.nextInt(10) + 1;
+            path = "Puzzlegame\\image\\"+"sport\\"+"sport" + num +"\\";
+            //计数器清零
+            step = 0;
+            //再次打乱二维数组
+            iniData();
+            //重新加载图片
+            iniImage();
+        }
     }
 }
